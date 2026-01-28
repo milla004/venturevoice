@@ -22,18 +22,18 @@ export async function POST(request: NextRequest) {
 
     // Format phone number (remove any non-digit characters)
     const formattedPhone = phone.replace(/\D/g, '');
-    
+
     // Ensure it starts with country code
-    const finalPhone = formattedPhone.startsWith('1') 
-      ? `+${formattedPhone}` 
+    const finalPhone = formattedPhone.startsWith('1')
+      ? `+${formattedPhone}`
       : `+1${formattedPhone}`;
 
     // Validate Vogent configuration
     if (!VOGENT_API_KEY) {
       console.error('VOGENT_API_KEY is not configured');
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Server configuration error. Please contact support.',
           debug: process.env.NODE_ENV === 'development' ? 'VOGENT_API_KEY not set' : undefined
         },
@@ -44,8 +44,8 @@ export async function POST(request: NextRequest) {
     if (!VOGENT_PHONE_NUMBER_ID) {
       console.error('VOGENT_PHONE_NUMBER_ID is not configured');
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Server configuration error. Please contact support.',
           debug: process.env.NODE_ENV === 'development' ? 'VOGENT_PHONE_NUMBER_ID not set' : undefined
         },
@@ -56,8 +56,8 @@ export async function POST(request: NextRequest) {
     if (!VOGENT_AGENT_ID) {
       console.error('VOGENT_AGENT_ID is not configured');
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Server configuration error. Please contact support.',
           debug: process.env.NODE_ENV === 'development' ? 'VOGENT_AGENT_ID not set' : undefined
         },
@@ -66,20 +66,18 @@ export async function POST(request: NextRequest) {
     }
 
     // Prepare Vogent API call payload
-    // Using callAgentInput to pass variables to the AI agent prompt
-    // Variable names (e.g., FIRST_NAME, BUSINESS_TYPE) will be replaced in the prompt
-    // For example: "Hi {{FIRST_NAME}}" will become "Hi John"
+    // Using customData to pass variables to the AI agent
     const vogentPayload = {
       toNumber: finalPhone,
       fromNumberId: VOGENT_PHONE_NUMBER_ID,
       callAgentId: VOGENT_AGENT_ID,
-      callAgentInput: {
-        FIRST_NAME: firstName,                        // For {{FIRST_NAME}} in prompt
-        BUSINESS_TYPE: businessType || 'home services',  // For {{BUSINESS_TYPE}} in prompt (default if not provided)
-        CUSTOMER_EMAIL: email,                        // For {{CUSTOMER_EMAIL}} in prompt
-        CUSTOMER_PHONE: finalPhone,                   // For {{CUSTOMER_PHONE}} in prompt
-        LEAD_SOURCE: 'Website Demo Call Request',     // For {{LEAD_SOURCE}} in prompt
-        INQUIRY_DATE: new Date().toLocaleDateString('en-US', {
+      customData: {
+        firstName: firstName,
+        businessType: businessType || 'home services',
+        customerEmail: email,
+        customerPhone: finalPhone,
+        leadSource: 'Website Demo Call Request',
+        inquiryDate: new Date().toLocaleDateString('en-US', {
           month: 'long',
           day: 'numeric',
           year: 'numeric'
@@ -109,16 +107,16 @@ export async function POST(request: NextRequest) {
       } catch {
         errorData = { message: errorText };
       }
-      
+
       console.error('Vogent API Error Details:', {
         status: vogentResponse.status,
         statusText: vogentResponse.statusText,
         error: errorData
       });
-      
+
       return NextResponse.json(
-        { 
-          success: false, 
+        {
+          success: false,
           error: 'Failed to initiate call. Please try again.',
           debug: process.env.NODE_ENV === 'development' ? errorData : undefined
         },
@@ -138,9 +136,9 @@ export async function POST(request: NextRequest) {
   } catch (error) {
     console.error('Demo Call API Error:', error);
     return NextResponse.json(
-      { 
-        success: false, 
-        error: 'An unexpected error occurred. Please try again.' 
+      {
+        success: false,
+        error: 'An unexpected error occurred. Please try again.'
       },
       { status: 500 }
     );
