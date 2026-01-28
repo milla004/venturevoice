@@ -1,0 +1,42 @@
+generator client {
+    provider = "prisma-client-js"
+    binaryTargets = ["native", "linux-musl-arm64-openssl-3.0.x"]
+    output = "/home/ubuntu/venturevoice_ai/nextjs_space/node_modules/.prisma/client"
+}
+
+datasource db {
+    provider = "postgresql"
+    url      = env("DATABASE_URL")
+}
+
+model FormSubmission {
+  id          String    @id @default(cuid())
+  type        String    // "contact", "demo", "booking", "newsletter"
+  name        String?
+  email       String?
+  phone       String?
+  company     String?
+  message     String?
+  source      String?   // Which page the form was submitted from
+  status      String    @default("new") // "new", "contacted", "closed"
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  @@map("form_submissions")
+}
+
+model CalculatorResult {
+  id                    String    @id @default(cuid())
+  missedCallsPerWeek    Int?
+  avgJobValue          Float?
+  callbackRate         Float?
+  closeRate           Float?
+  monthlyLostRevenue   Float?
+  annualRevenueAtRisk  Float?
+  ipAddress           String?
+  userAgent           String?
+  source              String?   // Which page calculator was used
+  createdAt           DateTime  @default(now())
+
+  @@map("calculator_results")
+}
